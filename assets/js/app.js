@@ -58,7 +58,7 @@
       '<div class="ctx"><b>' + esc(R.ENTITY.name) + '</b><span>' + ctxLabel + '</span></div>' +
       '<span class="phase-chip" title="' + esc(ph.desc) + '">' + ic('layers') + esc(ph.label) + ' · ' + esc(ph.levelLabel) + '</span>' +
       '<span class="clock" title="Waktu simulasi">' + ic('clock') + R.dt(R.store.clock) + '</span>' +
-      '<div class="top-actions"><button class="btn btn-gold btn-sm" data-action="tour-start" aria-label="Mode Juri">' + ic('play') + '<span>Mode Juri</span></button>' +
+      '<div class="top-actions"><button class="btn btn-gold btn-sm" data-action="tour-start" aria-label="Mode Demo">' + ic('play') + '<span>Mode Demo</span></button>' +
       '<button class="btn btn-ghost btn-sm" data-action="reset-demo" aria-label="Reset data demo" title="Kembalikan data demo ke kondisi awal">' + ic('reset') + '<span>Reset</span></button></div>' +
       '<div class="user" title="' + esc(me.email) + '"><span class="avatar" aria-hidden="true">' + esc(R.initials(me.name)) + '</span><span class="user-txt"><b>' + esc(me.name) + '</b><small>' + esc(me.unit) + '</small></span>' +
       '<button class="icon-btn" data-action="logout" aria-label="Keluar" title="Keluar">' + ic('logout') + '</button></div>' +
@@ -157,8 +157,8 @@
   H['tour-start'] = function () {
     if (R.store.events.length > R.store.seedCount) {
       R.modal.open({
-        eyebrow: 'Mode Juri', title: 'Mulai dari kondisi awal?',
-        body: '<p>Mode Juri menelusuri satu angka dari operator CEMS sampai lembaga pembiayaan, berpindah akun sesuai peran di setiap langkah. Alurnya paling jelas jika dimulai dari data awal.</p>',
+        eyebrow: 'Mode Demo', title: 'Mulai dari awal?',
+        body: '<p>Mode Demo mengajak Anda mengikuti satu angka emisi dari cerobong pabrik sampai ke bank dan masyarakat. Di setiap langkah, layar berpindah ke akun orang yang berwenang.</p><p>Sebelumnya sudah ada tindakan yang dijalankan. Agar ceritanya runtut, sebaiknya data dikembalikan ke kondisi awal dulu.</p>',
         footer: '<button class="btn btn-ghost" data-action="tour-noreset">Lanjut tanpa reset</button><button class="btn btn-primary" data-action="tour-reset">' + ic('reset') + 'Reset & mulai</button>'
       });
       return;
