@@ -1,6 +1,7 @@
-/* Mode Juri: tur terpandu "Satu angka, lima peran".
-   Setiap langkah masuk dengan akun peran yang berwenang, menyorot elemen nyata,
-   dan tombol "Lakukan untuk saya" menjalankan aksi sebenarnya di ledger. */
+/* Mode Demo: tur terpandu "Mengikuti satu angka emisi".
+   Setiap langkah masuk dengan akun orang yang berwenang, menyorot bagian layar yang dibahas,
+   dan tombol ▶ menjalankan tindakan sungguhan di catatan bersama (ledger).
+   Bahasa penjelasan sengaja dibuat sederhana untuk audiens umum. */
 (function (R) {
   'use strict';
   var esc = R.esc, ic = R.icon;
@@ -8,56 +9,84 @@
   function S() { return R.store.S; }
   function silent(fn) { try { fn(); } catch (e) { if (!(e instanceof R.RuleError)) throw e; } }
 
+  /* Sebutan peran dalam bahasa sehari-hari */
+  var PLAIN = {
+    rina: 'Petugas pencatat data emisi perusahaan',
+    dimas: 'Bagian pengawasan internal perusahaan',
+    lestari: 'Divisi Keberlanjutan perusahaan',
+    santoso: 'Direksi perusahaan',
+    komite: 'Komite yang mewakili Dewan Komisaris',
+    wiratama: 'Pemeriksa independen (kantor akuntan publik)',
+    siregar: 'Bank pemberi pendanaan hijau',
+    ojk: 'Pengawas (OJK bersama kementerian)'
+  };
+
   var STEPS = [
-    { as: 'rina', route: 'ledger', sel: '[data-code="LDG-28-K1-004128"].row-click', title: 'Satu angka: CO₂ Kiln 1, 14 Mar 2028 pukul 11.00',
-      body: 'Masuk sebagai <b>Rina H., operator data CEMS</b>. SISPEK mengirim <b>68,2 t/jam</b>. Rina mengajukan koreksi menjadi <b>71,9 t/jam</b> dengan berita acara kalibrasi. Nilai lama tidak dihapus.',
+    { as: 'rina', route: 'ledger', sel: '', title: 'Selamat datang di Mode Demo',
+      body: 'Kita akan mengikuti <b>satu angka emisi</b> dari cerobong pabrik sampai ke laporan, pemeriksa, bank, dan masyarakat. Di setiap langkah, layar berpindah ke akun orang yang memang berwenang.',
+      point: 'Tekan tombol bertanda ▶ untuk menjalankan tindakannya, lalu tekan <b>Lanjut</b>.' },
+    { as: 'rina', route: 'ledger', sel: '[data-code="LDG-28-K1-004128"].row-click', title: 'Satu angka dari cerobong pabrik',
+      body: 'Alat ukur di cerobong Kiln 1 mencatat <b>68,2 ton CO₂ per jam</b> pada 14 Maret 2028. Belakangan diketahui alat itu perlu disetel ulang, jadi Rina mengusulkan angkanya diperbaiki menjadi <b>71,9</b>, lengkap dengan berita acara kalibrasi.',
+      point: 'Angka lama tidak dihapus. Setiap usulan perbaikan wajib disertai alasan dan bukti.',
       prep: function () { R.ui.opFilter = 'semua'; R.ui.selected = 'LDG-28-K1-004128'; } },
-    { as: 'rina', route: 'ledger', sel: '#entry-detail', title: 'Rina tidak berwenang menyetujui koreksinya sendiri',
-      body: 'Akun operator tidak memiliki tombol persetujuan. Bila dipaksa lewat sistem, aturan empat mata tetap menolak.',
+    { as: 'rina', route: 'ledger', sel: '#entry-detail', title: 'Bolehkah Rina menyetujui usulannya sendiri?',
+      body: 'Tidak. Akun Rina memang tidak punya tombol "Setujui". Kalaupun dicoba, sistem tetap menolak.',
+      point: 'Orang yang mengusulkan perubahan tidak boleh sekaligus menyetujuinya. Ini mencegah angka diubah sepihak.',
       action: 'Coba setujui sebagai Rina', run: function () {
-        try { A.decideCorrection('rina', 'LDG-28-K1-004128', 'approve'); } catch (e) { R.toast(e.message, 'bad'); }
+        try { A.decideCorrection('rina', 'LDG-28-K1-004128', 'approve'); }
+        catch (e) { R.toast('Ditolak sistem: yang mengusulkan perubahan tidak boleh menyetujuinya sendiri.', 'bad'); }
       }, done: function () { return false; } },
-    { as: 'dimas', route: 'ledger', sel: '[data-tour="approve-correction"], #entry-detail', title: 'Dimas P. (Pengendalian Internal) menyetujui',
-      body: 'Akun penyetuju memiliki tombol yang tidak dimiliki operator. Koreksi menjadi revisi 2; revisi 1 (68,2) terkunci dan tetap dapat dibaca.',
+    { as: 'dimas', route: 'ledger', sel: '[data-tour="approve-correction"], #entry-detail', title: 'Orang kedua memeriksa dan menyetujui',
+      body: 'Sekarang kita masuk sebagai Dimas dari bagian pengawasan internal. Ia mengecek bukti kalibrasinya, lalu menyetujui perbaikan.',
+      point: 'Angka baru berlaku, tetapi angka lama tetap tersimpan dan bisa dilihat pemeriksa maupun pengawas.',
       prep: function () { R.ui.selected = 'LDG-28-K1-004128'; },
-      action: 'Setujui koreksi', run: function () { silent(function () { A.decideCorrection('dimas', 'LDG-28-K1-004128', 'approve'); }); },
+      action: 'Setujui perbaikan', run: function () { silent(function () { A.decideCorrection('dimas', 'LDG-28-K1-004128', 'approve'); }); },
       done: function () { return S().entries['LDG-28-K1-004128'].status === 'dikoreksi'; } },
-    { as: 'dimas', route: 'ledger', sel: '[data-tour="approve-entry"], #entry-detail', title: 'Sumber di luar CEMS ikut diverifikasi',
-      body: 'Solar alat berat Januari dihitung dari data aktivitas × faktor emisi, lalu disetujui pihak kedua sebelum masuk metrik.',
+    { as: 'dimas', route: 'ledger', sel: '[data-tour="approve-entry"], #entry-detail', title: 'Emisi dari luar cerobong juga dicatat',
+      body: 'Tidak semua emisi keluar dari cerobong. Solar untuk alat berat dihitung dari jumlah liter yang dipakai. Catatan ini juga harus disetujui orang kedua sebelum ikut dihitung.',
+      point: 'Semua sumber emisi melewati aturan pemeriksaan yang sama.',
       prep: function () { R.ui.selected = 'LDG-28-GRK-000214'; },
-      action: 'Setujui entri inventarisasi', run: function () { silent(function () { A.decideEntry('dimas', 'LDG-28-GRK-000214', 'approve'); }); },
+      action: 'Setujui catatan solar', run: function () { silent(function () { A.decideEntry('dimas', 'LDG-28-GRK-000214', 'approve'); }); },
       done: function () { return S().entries['LDG-28-GRK-000214'].status === 'diterima'; } },
-    { as: 'lestari', route: 'laporan', sel: '#metrics-card', title: 'Divisi Keberlanjutan: laporan membaca dari ledger',
-      body: 'Masuk sebagai <b>A. Lestari</b>. Total Scope 1 kini <b>1.202.040,0 tCO₂e</b>; setiap baris menunjuk ke kode ledger dan bisa ditelusuri sampai CEMS.',
+    { as: 'lestari', route: 'laporan', sel: '#metrics-card', title: 'Angka masuk ke laporan keberlanjutan',
+      body: 'Lestari dari Divisi Keberlanjutan menyusun laporan tahunan. Angkanya diambil langsung dari catatan tadi, tidak diketik ulang. Total emisi perusahaan kini <b>1.202.040 ton CO₂</b>.',
+      point: 'Setiap angka di laporan bisa ditelusuri kembali sampai ke alat ukurnya.',
       prep: function () { R.ui.kbTab = 'metrik'; } },
     { as: 'santoso', route: 'laporan', sel: '#report-flow', title: 'Direksi menyetujui laporan',
-      body: 'Akun <b>H. Santoso (Direktur Keuangan)</b> hanya dapat menjalankan langkah persetujuan Direksi, dan hanya bila tidak ada entri yang menunggu.',
+      body: 'Santoso mewakili Direksi. Laporan baru bisa disetujui kalau tidak ada lagi angka yang menunggu pemeriksaan.',
+      point: 'Direksi ikut bertanggung jawab atas angka emisi, sama seperti atas laporan keuangan.',
       prep: function () { R.ui.kbTab = 'metrik'; },
       action: 'Setujui sebagai Direksi', run: function () { silent(function () { A.advanceReport('santoso'); }); },
       done: function () { return !!S().report.steps.disetujui_direksi; } },
-    { as: 'komite', route: 'laporan', sel: '#report-flow', title: 'Komite Keberlanjutan menelaah',
-      body: 'Organ pendukung Dewan Komisaris menelaah informasi emisi, sesuai PUGKI 2021.',
+    { as: 'komite', route: 'laporan', sel: '#report-flow', title: 'Komite membaca ulang laporan',
+      body: 'Komite Keberlanjutan, yang mewakili Dewan Komisaris, menelaah laporan sekali lagi sebelum dikirim ke pemeriksa.',
+      point: 'Ada lapisan pengawasan tambahan di dalam perusahaan.',
       action: 'Selesaikan telaah Komite', run: function () { silent(function () { A.advanceReport('komite'); }); },
       done: function () { return !!S().report.steps.ditelaah_komite; } },
-    { as: 'lestari', route: 'laporan', sel: '#report-flow', title: 'Laporan dikirim ke penyedia assurance',
-      body: 'Snapshot angka beserta sidik digitalnya dikunci di ledger saat dikirim.',
-      action: 'Kirim ke penyedia assurance', run: function () { silent(function () { A.advanceReport('lestari'); }); },
+    { as: 'lestari', route: 'laporan', sel: '#report-flow', title: 'Laporan dikirim ke pemeriksa independen',
+      body: 'Saat dikirim, isi laporan dikunci. Kalau nanti ada angka yang berubah, sistem langsung tahu bahwa laporan yang diperiksa sudah tidak sama lagi.',
+      point: 'Yang diperiksa adalah versi laporan yang pasti, bukan angka yang bisa berubah-ubah.',
+      action: 'Kirim ke pemeriksa', run: function () { silent(function () { A.advanceReport('lestari'); }); },
       done: function () { return !!S().report.steps.dikirim; } },
-    { as: 'wiratama', route: 'assurance', sel: '#trace-card', title: 'Penyedia assurance menelusuri angka ke sumbernya',
-      body: 'Masuk sebagai <b>S. Wiratama</b>. Akun KAP hanya melihat penugasan, rantai ledger, dan ringkasan publik. Penelusuran: PSPK 2 → ledger → SISPEK → CEMS.' },
-    { as: 'wiratama', route: 'assurance', sel: '#samples-card', title: 'Uji sampel: koreksi, substitusi, inventarisasi',
-      body: 'Sistem memeriksa: nilai awal cocok dengan SISPEK, koreksi berbukti, pengaju ≠ penyetuju, metode substitusi terdokumentasi.',
-      action: 'Telusuri semua sampel', run: function () {
+    { as: 'wiratama', route: 'assurance', sel: '#trace-card', title: 'Pemeriksa menelusuri angka ke sumbernya',
+      body: 'Wiratama adalah akuntan publik independen. Ia mengikuti angka dari laporan, ke catatan perusahaan, ke data yang diterima pemerintah, sampai ke alat ukur di cerobong.',
+      point: 'Pemeriksa tidak sekadar membaca laporan. Ia memeriksa buktinya satu per satu.' },
+    { as: 'wiratama', route: 'assurance', sel: '#samples-card', title: 'Memeriksa beberapa catatan sebagai contoh',
+      body: 'Pemeriksa memilih beberapa catatan, termasuk angka yang tadi diperbaiki. Sistem membantu mengecek: apakah angka awalnya sama dengan data pemerintah, apakah buktinya ada, dan apakah pengusul serta penyetujunya orang yang berbeda.',
+      point: 'Pemeriksaan jadi lebih cepat karena semua bukti sudah tersusun di satu tempat.',
+      action: 'Periksa semua contoh', run: function () {
         silent(function () { S().engagement.samples.forEach(function (c) { if (!S().engagement.tests[c]) A.testSample(c, 'sesuai'); }); });
       }, done: function () { var eg = S().engagement; return eg && eg.samples.every(function (c) { return eg.tests[c]; }); } },
-    { as: 'wiratama', route: 'assurance', sel: '#analytics-card', title: 'Prosedur analitis menemukan dua hal',
-      body: 'Jam substitusi Kiln 2 yang belum terdokumentasi dan faktor emisi solar yang belum diperbarui dicatat sebagai temuan tidak material.',
+    { as: 'wiratama', route: 'assurance', sel: '#analytics-card', title: 'Pemeriksa menemukan dua catatan kecil',
+      body: 'Ada beberapa jam data pengganti di Kiln 2 yang belum dijelaskan cara hitungnya, dan angka acuan untuk menghitung emisi solar yang belum diperbarui. Keduanya kecil, tetapi tetap dicatat.',
+      point: 'Temuan kecil tidak disembunyikan. Semuanya dicatat dan wajib dijawab perusahaan.',
       action: 'Catat kedua temuan', run: function () {
         R.analytics(S()).forEach(function (a) { if (!a.info) silent(function () { A.recordFinding({ title: a.title, detail: a.detail, materiality: a.materiality, key: a.key }); }); });
       }, done: function () { return S().findingOrder.length >= 2; } },
-    { as: 'lestari', route: 'laporan', sel: '#findings-mgmt', title: 'Manajemen menindaklanjuti temuan',
-      body: 'Kembali ke akun emiten. Kesimpulan tidak dapat diterbitkan selama ada temuan yang belum ditanggapi.',
-      action: 'Kirim tanggapan manajemen', run: function () {
+    { as: 'lestari', route: 'laporan', sel: '#findings-mgmt', title: 'Perusahaan menjawab temuan',
+      body: 'Kembali ke perusahaan. Lestari menjelaskan apa yang sudah dan akan diperbaiki.',
+      point: 'Pemeriksa belum boleh memberi kesimpulan sebelum semua temuan dijawab.',
+      action: 'Kirim jawaban perusahaan', run: function () {
         silent(function () {
           S().findingOrder.forEach(function (id) {
             var f = S().findings[id];
@@ -65,35 +94,43 @@
           });
         });
       }, done: function () { var fs = S().findingOrder.map(function (i) { return S().findings[i]; }); return fs.length && fs.every(function (f) { return f.response; }); } },
-    { as: 'wiratama', route: 'assurance', sel: '#conclusion-card', title: 'Kesimpulan ISSA 5000 diterbitkan',
-      body: 'Fase 2 memakai limited assurance dengan bentuk kesimpulan negatif, ditautkan ke sidik digital versi laporan yang diperiksa.',
+    { as: 'wiratama', route: 'assurance', sel: '#conclusion-card', title: 'Pemeriksa memberi kesimpulan',
+      body: 'Kesimpulannya: <b>tidak ditemukan hal yang membuat angka emisi ini keliru secara berarti</b>. Kesimpulan mengikuti standar pemeriksaan internasional (ISSA 5000) dan melekat pada versi laporan yang diperiksa.',
+      point: 'Angka emisi kini punya "cap" dari pihak independen, bukan hanya pengakuan perusahaan sendiri.',
       prep: function () { R.ui.concl = { type: 'unmodified', basis: [] }; },
       action: 'Terbitkan kesimpulan', run: function () { silent(function () { A.issueConclusion('unmodified', S().phase === 3 ? 'reasonable' : 'limited', []); }); },
       done: function () { return !!S().conclusion; } },
-    { as: 'siregar', route: 'pembiayaan', sel: '#application-card', title: 'Bank belum dapat melihat ledger emiten',
-      body: 'Masuk sebagai <b>R. Siregar, Bank Lestari Nusantara</b>. Ledger emiten tertutup sampai emiten memberi izin. Bank mengajukan permintaan akses.',
-      action: 'Minta akses ke emiten', run: function () { silent(function () { A.requestConsent(); }); },
+    { as: 'siregar', route: 'pembiayaan', sel: '#application-card', title: 'Bank ingin melihat datanya, tetapi belum boleh',
+      body: 'Siregar dari bank sedang menilai pengajuan obligasi hijau perusahaan. Ia tidak bisa melihat data perusahaan sebelum diberi izin, jadi ia mengajukan permintaan.',
+      point: 'Data perusahaan tidak terbuka begitu saja untuk pihak luar.',
+      action: 'Minta izin akses', run: function () { silent(function () { A.requestConsent(); }); },
       done: function () { var c = S().consent.status; return c === 'diminta' || c === 'diberikan'; } },
-    { as: 'lestari', route: 'laporan', sel: '#consent-card', title: 'Emiten memberi akses terbatas',
-      body: 'Yang dibuka hanya informasi relevan dengan pengajuan. Data jam-an mentah tetap tertutup.',
-      action: 'Berikan akses', run: function () { silent(function () { if (S().consent.status !== 'diberikan') A.setConsent(true, 'lestari'); }); },
+    { as: 'lestari', route: 'laporan', sel: '#consent-card', title: 'Perusahaan memberi izin terbatas',
+      body: 'Bank hanya diberi akses ke yang ia perlukan: total emisi, laporan, dan kesimpulan pemeriksa. Data rinci per jam tetap tertutup.',
+      point: 'Perusahaan tetap memegang kendali atas datanya sendiri.',
+      action: 'Beri izin akses', run: function () { silent(function () { if (S().consent.status !== 'diberikan') A.setConsent(true, 'lestari'); }); },
       done: function () { return S().consent.status === 'diberikan'; } },
-    { as: 'siregar', route: 'pembiayaan', sel: '#application-card', title: 'Bank memeriksa prasyarat pendanaan hijau',
-      body: 'Kriteria terbuka dievaluasi dari ledger. Prasyarat membuka akses pengajuan; kelayakan proyek dan keuangan tetap dinilai bank.',
-      action: 'Catat hasil pemeriksaan', run: function () { silent(function () { A.runFinancingCheck(); }); },
+    { as: 'siregar', route: 'pembiayaan', sel: '#application-card', title: 'Bank mengecek syarat pendanaan hijau',
+      body: 'Daftar syaratnya terbuka dan sama untuk semua perusahaan. Hasilnya: <b>memenuhi syarat</b>. Keputusan memberi pendanaan tetap di tangan bank.',
+      point: 'Perusahaan yang angka emisinya terbukti dapat dipercaya lebih mudah mendapat pendanaan hijau.',
+      action: 'Cek syarat pendanaan', run: function () { silent(function () { A.runFinancingCheck(); }); },
       done: function () { return S().checks.length > 0; } },
-    { as: 'ojk', route: 'pengawasan', sel: '#sector-card', title: 'OJK melihat dampaknya di tingkat sektor',
-      body: 'Masuk sebagai <b>Komite Pengarah</b>. Baris sektor semen bertambah. Hanya akun ini yang dapat menetapkan fase; aturan sistem ikut berubah.' },
-    { as: 'ojk', route: 'rantai', sel: '#integrity-card', title: 'Bagaimana jika angka diubah diam-diam?',
-      body: 'Simulasikan pengubahan langsung di basis data: nilai awal 68,2 diganti 60,0 tanpa melalui alur koreksi. Rantai hash langsung putus.',
-      action: 'Simulasikan manipulasi', run: function () { R.store.simulateTamper(); },
+    { as: 'ojk', route: 'pengawasan', sel: '#sector-card', title: 'OJK memantau gambaran besarnya',
+      body: 'OJK bersama lembaga lain melihat perkembangan di semua sektor: berapa perusahaan yang sudah melapor, sudah diperiksa, dan memenuhi syarat. Baris sektor semen ikut bertambah karena perusahaan tadi.',
+      point: 'Pengawas bisa menilai apakah sistem berjalan dan kapan aturan bisa diperketat secara bertahap.' },
+    { as: 'ojk', route: 'rantai', sel: '#integrity-card', title: 'Bagaimana kalau ada yang mengubah angka diam-diam?',
+      body: 'Tekan tombol di bawah untuk berpura-pura mengganti angka 68,2 menjadi 60,0 langsung di database, tanpa lewat prosedur perbaikan.',
+      point: 'Setiap catatan punya "segel digital" yang tersambung ke catatan sebelumnya. Satu perubahan diam-diam membuat segelnya rusak dan langsung ketahuan.',
+      action: 'Ubah angka diam-diam', run: function () { R.store.simulateTamper(); },
       done: function () { return !!R.store.tamper; } },
-    { as: 'ojk', route: 'rantai', sel: '#integrity-card', title: 'Pulihkan rantai',
-      body: 'Inti REVEAL: <b>setiap klaim emisi ditopang bukti yang dapat diperiksa</b>, dan setiap perubahan meninggalkan jejak.',
-      action: 'Pulihkan rantai', run: function () { R.store.restoreTamper(); },
+    { as: 'ojk', route: 'rantai', sel: '#integrity-card', title: 'Memulihkan catatan',
+      body: 'Catatan dikembalikan dari cadangan yang masih utuh, dan segelnya kembali tersambung.',
+      point: 'Inti REVEAL: <b>setiap angka emisi punya bukti, dan setiap perubahan meninggalkan jejak</b>.',
+      action: 'Pulihkan catatan', run: function () { R.store.restoreTamper(); },
       done: function () { return !R.store.tamper; } },
-    { as: null, route: 'publik', sel: '#public-card', title: 'Ringkasan untuk masyarakat, tanpa login',
-      body: 'Angka yang dipublikasikan adalah angka yang telah diperiksa, lengkap dengan jenis kesimpulan dan sidik laporan. Tur selesai; silakan masuk dengan akun mana pun untuk menjelajah.' }
+    { as: null, route: 'publik', sel: '#public-card', title: 'Masyarakat bisa melihat hasilnya',
+      body: 'Tanpa perlu login, masyarakat dan investor bisa melihat total emisi yang sudah diperiksa beserta kesimpulan pemeriksanya.',
+      point: 'Demo selesai. Silakan masuk dengan akun mana pun untuk mencoba sendiri.' }
   ];
 
   var tour = { active: false, i: 0 };
@@ -121,6 +158,7 @@
   tour.focus = function () {
     var s = STEPS[tour.i];
     document.querySelectorAll('.tour-target').forEach(function (n) { n.classList.remove('tour-target'); });
+    if (!s.sel) return;
     var el = null;
     s.sel.split(',').some(function (q) { el = document.querySelector(q.trim()); return !!el; });
     if (el) { el.classList.add('tour-target'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
@@ -130,15 +168,16 @@
     var s = STEPS[tour.i];
     var done = s.done ? s.done() : false;
     var who = s.as ? R.ACCOUNTS[s.as] : null;
-    var html = '<div class="tour-card" role="dialog" aria-live="polite" aria-label="Mode Juri">' +
-      '<div class="tour-top"><span class="tour-k">Mode Juri · ' + (tour.i + 1) + '/' + STEPS.length + '</span><button class="icon-btn" data-action="tour-stop" aria-label="Keluar dari Mode Juri">' + ic('x') + '</button></div>' +
+    var html = '<div class="tour-card" role="dialog" aria-live="polite" aria-label="Mode Demo">' +
+      '<div class="tour-top"><span class="tour-k">Mode Demo · ' + (tour.i + 1) + '/' + STEPS.length + '</span><button class="icon-btn" data-action="tour-stop" aria-label="Keluar dari Mode Demo">' + ic('x') + '</button></div>' +
       '<div class="tour-bar"><span style="width:' + ((tour.i + 1) / STEPS.length * 100) + '%"></span></div>' +
-      '<div class="tour-who">' + (who ? '<span class="avatar avatar-sm" aria-hidden="true">' + esc(R.initials(who.name)) + '</span>' + esc(who.name) + ' · ' + esc(who.unit) : ic('globe') + 'Pengunjung tanpa login') + '</div>' +
+      '<div class="tour-who">' + (who ? '<span class="avatar avatar-sm" aria-hidden="true">' + esc(R.initials(who.name)) + '</span><span><b>' + esc(who.name) + '</b> · ' + esc(PLAIN[s.as]) + '</span>' : ic('globe') + '<span>Masyarakat umum, tanpa login</span>') + '</div>' +
       '<h3>' + esc(s.title) + '</h3><p>' + s.body + '</p>' +
+      (s.point ? '<div class="tour-point">' + ic('info') + '<span>' + s.point + '</span></div>' : '') +
       '<div class="tour-actions">' +
       (tour.i > 0 ? '<button class="btn btn-ghost btn-sm" data-action="tour-prev">' + ic('arrowL') + 'Kembali</button>' : '<span></span>') +
       '<div class="btn-row">' +
-      (s.action ? (done ? R.badge('Selesai', 'ok', 'check') : '<button class="btn btn-outline btn-sm" data-action="tour-do">' + ic('play') + esc(s.action) + '</button>') : '') +
+      (s.action ? (done ? R.badge('Sudah dijalankan', 'ok', 'check') : '<button class="btn btn-outline btn-sm" data-action="tour-do">' + ic('play') + esc(s.action) + '</button>') : '') +
       (tour.i < STEPS.length - 1 ? '<button class="btn btn-primary btn-sm" data-action="tour-next">Lanjut' + ic('arrow') + '</button>' : '<button class="btn btn-primary btn-sm" data-action="tour-stop">Selesai</button>') +
       '</div></div></div>';
     var el = document.getElementById('tour');
