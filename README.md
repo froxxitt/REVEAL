@@ -51,7 +51,7 @@ Buka situs → **Masuk** (`#/login`). Semua akun demo memakai kata sandi **`reve
 
 Ringkasan publik (`#/publik`) dapat dibuka tanpa login. Hak akses diatur di `assets/js/core/auth.js`. Aturan inti (empat mata, urutan persetujuan laporan) juga ditegakkan di lapisan ledger (`store.js`), sehingga tetap berlaku walaupun tombol dipanggil langsung.
 
-**Mode Juri** (20 langkah) berpindah akun otomatis di setiap langkah, mulai dari Rina sampai pengunjung publik. Setiap langkah punya tombol *Lakukan untuk saya*. Tombol **Reset** mengembalikan data demo ke kondisi awal.
+**Mode Demo** (21 langkah, ±3 menit) mengikuti satu angka emisi dari cerobong pabrik sampai masyarakat, dengan bahasa sederhana untuk audiens umum. Layar berpindah akun otomatis di setiap langkah, dan setiap langkah punya kotak "intinya" serta tombol ▶ yang menjalankan tindakannya. Tombol **Reset** mengembalikan data demo ke kondisi awal.
 
 ### Angka kunci (konsisten dengan Lampiran 8 esai)
 
@@ -63,7 +63,7 @@ Ringkasan publik (`#/publik`) dapat dibuka tanpa login. Hak akses diatur di `ass
 
 **Dari esai:** assurance ledger append-only (koreksi tanpa menghapus catatan lama) · alur CEMS–SISPEK → PSPK 1 & 2 → ISSA 5000 → pembiayaan bersyarat · pemisahan tugas sesuai PUGKI 2021 · akses lembaga pembiayaan terbatas atas persetujuan emiten · tiga fase (limited → reasonable) · ringkasan publik · lima peran.
 
-**Tambahan pada prototipe:** rantai hash SHA-256 dengan simulasi manipulasi · aturan fase yang dieksekusi sistem · deteksi otomatis kebutuhan penyajian kembali (terinspirasi kasus Telkom dalam esai) · prosedur analitis otomatis · Mode Juri.
+**Tambahan pada prototipe:** rantai hash SHA-256 dengan simulasi manipulasi · aturan fase yang dieksekusi sistem · deteksi otomatis kebutuhan penyajian kembali (terinspirasi kasus Telkom dalam esai) · prosedur analitis otomatis · Mode Demo.
 
 ## Arsitektur
 
@@ -79,7 +79,7 @@ assets/
                             penurunan status, aturan tata kelola (RuleError)
   js/ui/components.js       modal, toast, lencana, penelusuran 4 lompatan
   js/views/*.js             beranda + 5 ruang kerja + rantai + publik
-  js/tour.js                Mode Juri
+  js/tour.js                Mode Demo
   js/app.js                 router hash, cangkang, delegasi event
 ```
 
