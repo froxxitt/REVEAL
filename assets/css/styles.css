@@ -509,7 +509,7 @@ body[data-layout="landing"] { background: var(--cream-50); }
 .toast.out { opacity: 0; transform: translateY(-6px); transition: .3s; }
 @keyframes tin { from { opacity: 0; transform: translateY(-8px); } }
 
-/* Mode Juri */
+/* Mode Demo */
 #tour { position: fixed; right: 18px; bottom: 18px; z-index: 50; width: min(390px, calc(100vw - 24px)); }
 .tour-card { background: var(--brown-900); color: var(--cream-100); border-radius: 16px; padding: 16px 18px; box-shadow: 0 24px 60px -18px rgba(0, 0, 0, .6); border: 1px solid rgba(240, 208, 142, .35); }
 .tour-top { display: flex; justify-content: space-between; align-items: center; }
@@ -715,3 +715,29 @@ body[data-layout="public"] { background: var(--cream-50); }
   .login-card .form { padding: 16px; }
   .top-actions { margin-left: auto; }
 }
+.tour-point { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(212, 160, 58, .14); border: 1px solid rgba(240, 208, 142, .3); font-size: 13px; line-height: 1.45; color: var(--gold-100); }
+.tour-point .ico { width: 16px; height: 16px; color: var(--gold-400); margin-top: 2px; }
+.tour-who b { color: #fff; }
+.tour-card p { line-height: 1.55; }
+@media (max-width: 640px) { .tour-point { font-size: 12.5px; } .tour-card h3 { font-size: 15px; } }
+.tour-point { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(212, 160, 58, .14); border: 1px solid rgba(240, 208, 142, .3); font-size: 13px; line-height: 1.45; color: var(--gold-100); }
+.tour-point .ico { width: 16px; height: 16px; color: var(--gold-400); margin-top: 2px; }
+.tour-who b { color: #fff; }
+.tour-card p { line-height: 1.55; }
+@media (max-width: 640px) { .tour-point { font-size: 12.5px; } .tour-card h3 { font-size: 15px; } }
+/* Kartu Mode Demo: tinggi dibatasi, isi bergulir, tombol selalu terlihat */
+.tour-card { max-height: calc(100vh - 36px); overflow-y: auto; overscroll-behavior: contain; }
+.tour-actions { position: sticky; bottom: -16px; margin: 12px -18px -16px; padding: 10px 18px 14px; background: var(--brown-900); border-top: 1px solid rgba(240, 208, 142, .15); }
+@media (max-width: 640px) {
+  .tour-card { max-height: 58vh; }
+  .tour-actions { bottom: -14px; margin: 10px -14px -14px; padding: 10px 14px 12px; }
+  .tour-actions > .btn-ghost { padding-left: 6px; padding-right: 6px; }
+  body.touring .view { padding-bottom: 62vh; }
+}
+/* Daftar sampel tidak boleh melebarkan halaman di layar kecil */
+.samples, .sample-detail { min-width: 0; }
+.sample { width: 100%; min-width: 0; }
+.sample .mono, .sample-sub { overflow-wrap: anywhere; }
+.add-sample select { width: 100%; max-width: 100%; text-overflow: ellipsis; }
+.locked > div { min-width: 0; }
+@media (max-width: 640px) { .badge { white-space: normal; max-width: 100%; } }
